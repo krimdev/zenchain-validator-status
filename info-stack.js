@@ -19,7 +19,7 @@ const STAKING_ABI = [
  
  const STAKING_ADDRESS = "0x0000000000000000000000000000000000000800";
  
- let currentValidatorAddress = "0xef459153B68648947B6D2863B902595e22040FfA";
+ let currentValidatorAddress = "";
  let currentUserAddress = null;
  
  // DOM Elements
