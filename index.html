@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zenchain Testnet Validator Status by KrimDev</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Loader Animation */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8 text-gray-800">Zenchain Testnet Validator Status by KrimDev</h1>
+        <!-- Wallet Connection -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700"><a class="text-blue-600" href="https://github.com/krimdev/zenchain-validator-status" target="_blank">Github Repository</a></h2>
+                <button id="connectWallet" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    Connect Wallet
+                </button>
+            </div>
+            <div id="walletInfo" class="mt-4 text-gray-600"></div>
+        </div>
+        <!-- Dashboard Section -->
+        <div class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Validator Info Card -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 id="validatorTitle" class="text-xl font-semibold mb-4 text-gray-700 flex justify-between items-center">
+                        Validator Statistics
+                        <span id="validatorStatus" class="text-sm"></span>
+                    </h2>
+                        <div class="space-y-3" id="validatorStats">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Current Era</span>
+                            <span class="font-medium" id="currentEraDisplay">Not connected...</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Total Nominators</span>
+                            <span class="font-medium" id="nominatorsCountDisplay">Not connected...</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Total Stake</span>
+                            <span class="font-medium" id="totalStakeDisplay">Not connected...</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Commission</span>
+                            <span class="font-medium" id="commissionDisplay">Not connected...</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Active Era Points</span>
+                            <span class="font-medium" id="eraPointsDisplay">Not connected...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nominators List Card -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">Active Nominators</h2>
+                    <div class="overflow-y-auto max-h-[150px]" id="nominatorsList">
+                        <div class="space-y-2">
+                            <!-- Nominators List -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        
+
+    <!-- Native Staking -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Native Staking</h2>
+        <div class="space-y-4">
+
+            <!-- Staking -->
+            <div>
+                <div class="flex items-center gap-4 mb-2">
+                    <input type="number" id="stakeAmount" placeholder="Amount to stake" class="border rounded p-2" step="0.1">
+                    <button id="stakeButton" disabled class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                        Stake
+                    </button>
+                </div>
+                <div id="stakeResult" class="mt-2"></div>
+                <div id="stakeInfo" class="mt-2"></div>
+            </div>
+
+            <!-- Unstaking -->
+            <div>
+                <div class="flex items-center gap-4 mb-2">
+                    <input type="number" id="unstakeAmount" placeholder="Amount to unstake" class="border rounded p-2" step="0.1">
+                    <button id="unstakeButton" disabled class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                        Unstake
+                    </button>
+                </div>
+                <div id="unstakeResult" class="mt-2"></div>
+            </div>
+
+            <div id="stakingLoader" class="loader"></div>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.8.1/ethers.umd.min.js"></script>
+    <script src="connect.js"></script>
+    <script src="info-stack.js"></script>
+
+</body>
+</html>
