@@ -57,7 +57,7 @@ async function connectWallet() {
             if (window.updateAllInfo) {
                 window.updateAllInfo();
             }
-        }, 30000);
+        }, 3600000);
 
     } catch (error) {
         walletInfo.innerHTML = `
