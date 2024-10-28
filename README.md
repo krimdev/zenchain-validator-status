@@ -41,19 +41,6 @@ The interface provides:
   - Add to existing stake
   - Unbond tokens
 
-## Official Zenchain Links
-
-- [Twitter](https://twitter.com/zenchain)
-- [Telegram Announcements](https://t.me/zenchain_announcements)
-- [Telegram Chat](https://t.me/zenchain_chat)
-- [Technical Documentation](https://docs.zenchain.com)
-- [ZenQuest](https://zenchain.com/zenquest)
-- [Faucet](https://faucet.zenchain.com)
-- [Node Station](https://nodestation.zenchain.com)
-- [Explorer](https://explorer.zenchain.com)
-- [Litepaper](https://zenchain.com/litepaper)
-- [Discord](https://discord.com/invite/zenchain)
-
 ## Tech Stack
 
 - HTML/Tailwind CSS
@@ -66,6 +53,19 @@ The interface provides:
 - Enhanced nominator analytics
 - Historical performance tracking
 - Advanced staking metrics
+
+## Official Zenchain Links
+
+- [Twitter](https://twitter.com/zenchain)
+- [Telegram Announcements](https://t.me/zenchain_announcements)
+- [Telegram Chat](https://t.me/zenchain_chat)
+- [Technical Documentation](https://docs.zenchain.com)
+- [ZenQuest](https://zenchain.com/zenquest)
+- [Faucet](https://faucet.zenchain.com)
+- [Node Station](https://nodestation.zenchain.com)
+- [Explorer](https://explorer.zenchain.com)
+- [Litepaper](https://zenchain.com/litepaper)
+- [Discord](https://discord.com/invite/zenchain)
 
 ## Contributing
 
