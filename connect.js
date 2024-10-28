@@ -26,6 +26,8 @@ async function connectWallet() {
         }
 
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        currentValidatorAddress = accounts[0];
+        
         walletInfo.innerHTML = `
             <div class="p-4 bg-green-100 text-green-700 rounded-md flex justify-between items-center">
                 <span>Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}</span>
