@@ -15,10 +15,13 @@ const STAKING_ABI = [
     "function erasValidatorNominationPageTotalExposure(uint32 eraIndex, address validatorStash, uint32 pageIndex) external view returns (uint256)",
     "function erasValidatorPrefs(uint32 eraIndex, address validatorStash) external view returns (uint256 commission, bool blocked)",
     "function erasValidatorRewardPoints(uint32 eraIndex, address validatorStash) external view returns (uint256)",
+    "function erasTotalRewardPoints(uint32 eraIndex) external view returns (uint256)",
+    "function erasTotalStake(uint32 eraIndex) external view returns (uint256)",
+    "function minActiveStake() external view returns (uint256)",
     "function erasValidatorNominationPageNominatorExposure(uint32 eraIndex, address validatorStash, uint32 pageIndex, uint32 nominationIndex) external view returns (address who, uint256 value)" ];
  
  const STAKING_ADDRESS = "0x0000000000000000000000000000000000000800";
- 
+
  let currentValidatorAddress = "";
  let currentUserAddress = null;
  
@@ -32,7 +35,8 @@ const STAKING_ABI = [
  const stakeInfo = document.getElementById('stakeInfo');
  const stakeResult = document.getElementById('stakeResult');
  const unstakeResult = document.getElementById('unstakeResult');
- 
+ stakeButton.disabled = true;
+ unstakeButton.disabled = true;
  async function updateAllInfo() {
     try {
         console.log("UpdateAllInfo started");
@@ -54,19 +58,40 @@ const STAKING_ABI = [
  
  async function updateDashboard(validatorAddress, staking) {
     try {
-        console.log("Starting dashboard update");
-        
-            const currentEra = await staking.currentEra();
-            const activeEra = await staking.activeEra();
-            console.log("Eras:", { currentEra: currentEra.toString(), activeEra: activeEra.toString() });
-
-            const [eraPrefsCommission, eraPrefsBlocked] = await staking.erasValidatorPrefs(activeEra, validatorAddress);
-            const rewardPoints = await staking.erasValidatorRewardPoints(activeEra, validatorAddress);
-            console.log("Validator Era Info:", {
-                commission: (Number(eraPrefsCommission) / 10000000).toFixed(2) + "%",
-                blocked: eraPrefsBlocked,
-                rewardPoints: rewardPoints.toString()
+        const currentEra = await staking.currentEra();
+        const activeEra = await staking.activeEra();
+        console.log("Eras:", { currentEra: currentEra.toString(), activeEra: activeEra.toString() });
+    
+        const [eraPrefsCommission, eraPrefsBlocked] = await staking.erasValidatorPrefs(activeEra, validatorAddress);
+        const rewardPoints = await staking.erasValidatorRewardPoints(activeEra, validatorAddress);
+        const [totalStake, ownStake] = await staking.erasValidatorTotalStake(activeEra, validatorAddress);
+    
+        // Test des métriques de popularité
+        try {
+            const totalRewardPoints = await staking.erasTotalRewardPoints(activeEra);
+            const eraTotalStake = await staking.erasTotalStake(activeEra);
+            const minActive = await staking.minActiveStake();
+    
+            console.log("Popularity Metrics:", {
+                pointsRatio: {
+                    validator: rewardPoints.toString(),
+                    total: totalRewardPoints.toString(),
+                    percentage: ((Number(rewardPoints) * 100) / Number(totalRewardPoints)).toFixed(2) + '%'
+                },
+                stakeRatio: {
+                    validator: ethers.formatEther(totalStake),
+                    total: ethers.formatEther(eraTotalStake),
+                    percentage: ((Number(totalStake) * 100) / Number(eraTotalStake)).toFixed(2) + '%'
+                },
+                stakeVsMin: {
+                    stake: ethers.formatEther(totalStake),
+                    minimum: ethers.formatEther(minActive),
+                    ratio: (Number(totalStake) / Number(minActive)).toFixed(2) + 'x'
+                }
             });
+        } catch (error) {
+            console.log("Error fetching popularity metrics:", error.message);
+        }
 
         const validatorStatus = await staking.status(validatorAddress);
         const statusText = {
@@ -78,7 +103,6 @@ const STAKING_ABI = [
         console.log("Validator status:", validatorStatus, "->", statusText);
 
         const [commission, blocked] = await staking.validatorPrefs(validatorAddress);
-        const [totalStake, ownStake] = await staking.erasValidatorTotalStake(activeEra, validatorAddress);
         const [numNominators, numPages] = await staking.erasValidatorNominatorsCount(activeEra, validatorAddress);
 
         document.getElementById('validatorStatus').innerHTML = `
@@ -104,13 +128,7 @@ const STAKING_ABI = [
             `${Number(ethers.formatEther(totalStake)).toFixed(2)} ZCX (Own: ${Number(ethers.formatEther(ownStake)).toFixed(2)} ZCX)`;
 
         const nominatorsList = document.getElementById('nominatorsList');
-        nominatorsList.innerHTML = `
-            <div class="space-y-2">
-                <div class="p-3 bg-blue-50 rounded">
-                    <span class="text-sm font-medium text-blue-600">Total Nominators: ${numNominators}</span>
-                </div>
-            </div>
-        `;
+        nominatorsList.innerHTML = "";
         
         for (let page = 0; page < numPages; page++) {
             for (let i = 0; i < numNominators; i++) {
@@ -148,12 +166,12 @@ const STAKING_ABI = [
 
         console.log("Dashboard update completed");
     } catch (error) {
-        console.error("Error updating dashboard:", error);
         document.getElementById('validatorStats').innerHTML = `
             <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                Error: ${error.message}
+                You are not a validator!
             </div>
         `;
+        const noValidator = true;
     }
 }
  async function updateUserInfo(userAddress, staking) {
@@ -187,17 +205,15 @@ const STAKING_ABI = [
         }
         console.log("User info update completed");
     } catch (error) {
-        console.error("Error updating user info:", error);
-        stakeInfo.innerHTML = `
-            <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                Error: ${error.message}
-            </div>
-        `;
+
+        stakeButton.disabled = true;
+        unstakeButton.disabled = true;
     }
  }
  
  async function stake() {
     try {
+        if(!noValidator){
         stakingLoader.style.display = 'block';
         const amount = stakeAmount.value;
         if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
@@ -216,6 +232,7 @@ const STAKING_ABI = [
         
         await tx.wait();
         await updateAllInfo();
+        }
     } catch (error) {
         stakeResult.innerHTML = `
             <div class="p-4 bg-red-100 text-red-700 rounded-md">
@@ -229,28 +246,31 @@ const STAKING_ABI = [
  
  async function bondExtra() {
     try {
-        stakingLoader.style.display = 'block';
-        const amount = stakeAmount.value;
-        if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
- 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
-        
-        const tx = await staking.bondExtra(ethers.parseEther(amount));
-        
-        stakeResult.innerHTML = `
-            <div class="p-4 bg-blue-100 text-blue-700 rounded-md">
-                Transaction sent: <a href="https://zentrace.io/tx/${tx.hash}" target="_blank" class="underline">${tx.hash}</a>
-            </div>
-        `;
-        
-        await tx.wait();
-        await updateAllInfo();
+        if(!noValidator){
+            stakingLoader.style.display = 'block';
+            const amount = stakeAmount.value;
+            if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
+    
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
+            
+            const tx = await staking.bondExtra(ethers.parseEther(amount));
+            
+            stakeResult.innerHTML = `
+                <div class="p-4 bg-blue-100 text-blue-700 rounded-md">
+                    Transaction sent: <a href="https://zentrace.io/tx/${tx.hash}" target="_blank" class="underline">${tx.hash}</a>
+                </div>
+            `;
+            
+            await tx.wait();
+            await updateAllInfo();            
+        }
+
     } catch (error) {
         stakeResult.innerHTML = `
             <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                Error: ${error.message}
+                Error: You are not a validator!
             </div>
         `;
     } finally {
@@ -260,6 +280,7 @@ const STAKING_ABI = [
  
  async function unstake() {
     try {
+        if(!noValidator){
         stakingLoader.style.display = 'block';
         const amount = unstakeAmount.value;
         if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
@@ -278,6 +299,7 @@ const STAKING_ABI = [
         
         await tx.wait();
         await updateAllInfo();
+        }
     } catch (error) {
         unstakeResult.innerHTML = `
             <div class="p-4 bg-red-100 text-red-700 rounded-md">
@@ -295,6 +317,8 @@ const STAKING_ABI = [
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         currentUserAddress = await signer.getAddress();
+        stakeButton.disabled = false;
+        unstakeButton.disabled = false;
         
         await updateAllInfo();
         console.log("EnableStakingButtons completed");
