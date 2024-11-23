@@ -41,10 +41,8 @@ The interface provides:
   - Total Stake
   - Active Nominators
 
-- **Staking operations**:
-  - Stake new tokens
-  - Add to existing stake
-  - Unbond tokens
+- **Validator History**:
+  - Show last 3 era stats
 
 ## Tech Stack
 
