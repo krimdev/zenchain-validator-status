@@ -4,7 +4,8 @@
 
 A web interface for monitoring Zenchain validators and staking operations. This tool provides real-time monitoring of validator status, nominator tracking, and staking management capabilities.
 
-![DEMO](./screen.png)
+<img src="./screen.png" alt="DEMO" width="500">
+
 
 ## Features
 
