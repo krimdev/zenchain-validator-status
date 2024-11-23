@@ -11,7 +11,7 @@ A web interface for monitoring Zenchain validators and staking operations. This 
 
 - Real-time validator statistics monitoring
 - Active nominators tracking with stake amounts
-- Staking operations (Bond, Bond Extra, Unbond)
+- History
 - Auto-refresh of validator data
 - MetaMask wallet integration
 - Auto-reconnect functionality
