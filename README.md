@@ -1,6 +1,10 @@
+
+
 # Zenchain Testnet Validator Status
 
 A web interface for monitoring Zenchain validators and staking operations. This tool provides real-time monitoring of validator status, nominator tracking, and staking management capabilities.
+
+![DEMO](./screen.png)
 
 ## Features
 
