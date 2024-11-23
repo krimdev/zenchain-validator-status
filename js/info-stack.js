@@ -1,62 +1,37 @@
 const STAKING_ABI = [
-    "function bondWithRewardDestination(uint256 value, uint8 dest) external returns (bool)",
-    "function unbond(uint256 value) external returns (bool)",
-    "function withdrawUnbonded(uint32 numSlashingSpans) external returns (bool)",
-    "function bondExtra(uint256 value) external returns (bool)",
-    "function isUnbonding(address who) external view returns (bool)",
-    "function bondingDuration() external view returns (uint256)",
-    "function stake(address who) external view returns (uint256 total, uint256 active)",
     "function status(address who) external view returns (uint8)",
     "function currentEra() external view returns (uint256)",
     "function activeEra() external view returns (uint256)",
     "function validatorPrefs(address who) external view returns (uint256, bool)",
     "function erasValidatorTotalStake(uint32 eraIndex, address validatorStash) external view returns (uint256 totalStake, uint256 ownStake)",
     "function erasValidatorNominatorsCount(uint32 eraIndex, address validatorStash) external view returns (uint32 numNominators, uint32 numPages)",
-    "function erasValidatorNominationPageTotalExposure(uint32 eraIndex, address validatorStash, uint32 pageIndex) external view returns (uint256)",
     "function erasValidatorPrefs(uint32 eraIndex, address validatorStash) external view returns (uint256 commission, bool blocked)",
     "function erasValidatorRewardPoints(uint32 eraIndex, address validatorStash) external view returns (uint256)",
     "function erasTotalRewardPoints(uint32 eraIndex) external view returns (uint256)",
     "function erasTotalStake(uint32 eraIndex) external view returns (uint256)",
     "function minActiveStake() external view returns (uint256)",
-    "function erasValidatorNominationPageNominatorExposure(uint32 eraIndex, address validatorStash, uint32 pageIndex, uint32 nominationIndex) external view returns (address who, uint256 value)" ];
- 
- const STAKING_ADDRESS = "0x0000000000000000000000000000000000000800";
+    "function historyDepth() external view returns (uint256)",
+    "function erasValidatorNominationPageNominatorExposure(uint32 eraIndex, address validatorStash, uint32 pageIndex, uint32 nominationIndex) external view returns (address who, uint256 value)"
+];
 
- let currentValidatorAddress = "";
- let currentUserAddress = null;
- 
- // DOM Elements
- const stakeButton = document.getElementById('stakeButton');
- const unstakeButton = document.getElementById('unstakeButton');
- const stakeAmount = document.getElementById('stakeAmount');
- const unstakeAmount = document.getElementById('unstakeAmount');
- const stakingLoader = document.getElementById('stakingLoader');
- const validatorStats = document.getElementById('validatorStats');
- const stakeInfo = document.getElementById('stakeInfo');
- const stakeResult = document.getElementById('stakeResult');
- const unstakeResult = document.getElementById('unstakeResult');
- stakeButton.disabled = true;
- unstakeButton.disabled = true;
- async function updateAllInfo() {
+const STAKING_ADDRESS = "0x0000000000000000000000000000000000000800";
+
+let currentValidatorAddress = "";
+let currentUserAddress = null;
+
+async function updateAllInfo() {
     try {
         console.log("UpdateAllInfo started");
-        stakingLoader.style.display = 'block';
         const provider = new ethers.BrowserProvider(window.ethereum);
         const staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, provider);
         
         await updateDashboard(currentValidatorAddress, staking);
-        
-        if (currentUserAddress) {
-            await updateUserInfo(currentUserAddress, staking);
-        }
     } catch (error) {
         console.error("Error updating info:", error);
-    } finally {
-        stakingLoader.style.display = 'none';
     }
- }
- 
- async function updateDashboard(validatorAddress, staking) {
+}
+
+async function updateDashboard(validatorAddress, staking) {
     try {
         const currentEra = await staking.currentEra();
         const activeEra = await staking.activeEra();
@@ -66,7 +41,6 @@ const STAKING_ABI = [
         const rewardPoints = await staking.erasValidatorRewardPoints(activeEra, validatorAddress);
         const [totalStake, ownStake] = await staking.erasValidatorTotalStake(activeEra, validatorAddress);
     
-        // Test des métriques de popularité
         try {
             const totalRewardPoints = await staking.erasTotalRewardPoints(activeEra);
             const eraTotalStake = await staking.erasTotalStake(activeEra);
@@ -115,11 +89,9 @@ const STAKING_ABI = [
         </span>
         `;
         document.getElementById('eraPointsDisplay').textContent = `${rewardPoints.toString()} points`;
-
         document.getElementById('currentEraDisplay').innerHTML = `
             <div>Current: ${currentEra}, Active: ${activeEra}</div>
         `;
-        
         document.getElementById('commissionDisplay').textContent = 
             `${(Number(commission) / 10000000).toFixed(2)}%`;
         document.getElementById('nominatorsCountDisplay').textContent = 
@@ -164,170 +136,88 @@ const STAKING_ABI = [
             }
         }
 
-        console.log("Dashboard update completed");
+                console.log("Dashboard update completed");
+
+                try {
+
+
+                    
+
+                    console.log("Starting history load");
+                    document.getElementById('historyLoader').style.display = 'block';
+                    document.getElementById('historyContent').style.display = 'none';
+                    
+                    const historyDepth = await staking.historyDepth();
+                    console.log("History depth:", historyDepth.toString());
+                    
+                    const tableBody = document.getElementById('historyTableBody');
+                    const currentEraNum = Number(currentEra);
+                    const startEra = Math.max(currentEraNum - 2, 0);
+                    console.log("Era range:", {currentEraNum, startEra});
+                
+                    tableBody.innerHTML = '';
+                    let tableContent = '';
+                
+                    for(let era = currentEraNum; era >= startEra; era--) {
+
+                        try {
+                            const [numNominators] = await staking.erasValidatorNominatorsCount(era, validatorAddress);
+                            console.log("Loading era:", era);
+                            const validatorPoints = await staking.erasValidatorRewardPoints(era, validatorAddress);
+                            const totalPoints = await staking.erasTotalRewardPoints(era);
+                            
+                            if (Number(validatorPoints) > 0) {
+                                
+                                tableContent += `
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">${era}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">${validatorPoints.toString()}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">${totalPoints.toString()}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">${Number(numNominators)}</td>
+                                    </tr>
+                                `;
+                            }
+                        } catch (error) {
+                            console.log(`Error loading era ${era}:`, error);
+                        }
+                    }
+                
+                    console.log("Finished loading all eras");
+                    tableBody.innerHTML = tableContent;
+                    
+                    document.getElementById('historyLoader').style.display = 'none';
+                    document.getElementById('historyContent').style.display = 'block';
+                    console.log("Display updated");
+                
+                } catch (error) {
+                    console.log("Error loading history:", error);
+                    document.getElementById('historyLoader').style.display = 'none';
+                }
+                        
+
     } catch (error) {
         document.getElementById('validatorStats').innerHTML = `
             <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                You are not a validator!
+            ${error.message}
             </div>
         `;
         const noValidator = true;
     }
 }
- async function updateUserInfo(userAddress, staking) {
-    try {
-        console.log("Starting user info update");
-        const [total, active] = await staking.stake(userAddress);
-        const isUnbonding = await staking.isUnbonding(userAddress);
-        const bondingDuration = await staking.bondingDuration();
-        const currentEra = await staking.currentEra();
- 
-        const totalStaked = Number(ethers.formatEther(total)).toFixed(2);
-        const activeStake = Number(ethers.formatEther(active)).toFixed(2);
- 
-        stakeInfo.innerHTML = `
-            <div class="p-4 bg-blue-100 text-blue-700 rounded-md">
-                <div>Your Stake: ${totalStaked} ZCX (${activeStake} ZCX active)</div>
-                <div class="mt-2">
-                    ${isUnbonding ? 
-                        `<span class="text-yellow-600">
-                            Unstaking in progress: Available at era ${Number(currentEra) + Number(bondingDuration)}
-                        </span>` : 
-                        'No unstaking in progress'}
-                </div>
-            </div>
-        `;
- 
-        if (total > 0) {
-            stakeButton.textContent = "Bond Extra";
-            stakeButton.removeEventListener('click', stake);
-            stakeButton.addEventListener('click', bondExtra);
-        }
-        console.log("User info update completed");
-    } catch (error) {
 
-        stakeButton.disabled = true;
-        unstakeButton.disabled = true;
-    }
- }
- 
- async function stake() {
-    try {
-        if(!noValidator){
-        stakingLoader.style.display = 'block';
-        const amount = stakeAmount.value;
-        if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
- 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
-        
-        const tx = await staking.bondWithRewardDestination(ethers.parseEther(amount), 0);
-        
-        stakeResult.innerHTML = `
-            <div class="p-4 bg-blue-100 text-blue-700 rounded-md">
-                Transaction sent: <a href="https://zentrace.io/tx/${tx.hash}" target="_blank" class="underline">${tx.hash}</a>
-            </div>
-        `;
-        
-        await tx.wait();
-        await updateAllInfo();
-        }
-    } catch (error) {
-        stakeResult.innerHTML = `
-            <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                Error: ${error.message}
-            </div>
-        `;
-    } finally {
-        stakingLoader.style.display = 'none';
-    }
- }
- 
- async function bondExtra() {
-    try {
-        if(!noValidator){
-            stakingLoader.style.display = 'block';
-            const amount = stakeAmount.value;
-            if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
-    
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
-            const staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
-            
-            const tx = await staking.bondExtra(ethers.parseEther(amount));
-            
-            stakeResult.innerHTML = `
-                <div class="p-4 bg-blue-100 text-blue-700 rounded-md">
-                    Transaction sent: <a href="https://zentrace.io/tx/${tx.hash}" target="_blank" class="underline">${tx.hash}</a>
-                </div>
-            `;
-            
-            await tx.wait();
-            await updateAllInfo();            
-        }
-
-    } catch (error) {
-        stakeResult.innerHTML = `
-            <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                Error: You are not a validator!
-            </div>
-        `;
-    } finally {
-        stakingLoader.style.display = 'none';
-    }
- }
- 
- async function unstake() {
-    try {
-        if(!noValidator){
-        stakingLoader.style.display = 'block';
-        const amount = unstakeAmount.value;
-        if (!amount || amount <= 0) throw new Error('Please enter a valid amount');
- 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
-        
-        const tx = await staking.unbond(ethers.parseEther(amount));
-        
-        unstakeResult.innerHTML = `
-            <div class="p-4 bg-blue-100 text-blue-700 rounded-md">
-                Transaction sent: <a href="https://zentrace.io/tx/${tx.hash}" target="_blank" class="underline">${tx.hash}</a>
-            </div>
-        `;
-        
-        await tx.wait();
-        await updateAllInfo();
-        }
-    } catch (error) {
-        unstakeResult.innerHTML = `
-            <div class="p-4 bg-red-100 text-red-700 rounded-md">
-                Error: ${error.message}
-            </div>
-        `;
-    } finally {
-        stakingLoader.style.display = 'none';
-    }
- }
- 
- async function enableStakingButtons() {
+async function enableStakingButtons() {
     try {
         console.log("EnableStakingButtons started");
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         currentUserAddress = await signer.getAddress();
-        stakeButton.disabled = false;
-        unstakeButton.disabled = false;
-        
         await updateAllInfo();
         console.log("EnableStakingButtons completed");
     } catch (error) {
         console.error("Error in enableStakingButtons:", error);
     }
- }
+}
 
- stakeButton.addEventListener('click', stake);
- unstakeButton.addEventListener('click', unstake);
- 
- window.enableStakingButtons = enableStakingButtons;
+window.enableStakingButtons = enableStakingButtons;
+
+

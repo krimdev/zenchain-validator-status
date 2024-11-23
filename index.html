@@ -55,6 +55,10 @@
         </div>
         <!-- Dashboard Section -->
         <div class="mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 text-center">
+                <h2 class="text-3xl font-bold text-gray-900">Era ... Ends In</h2>
+                <p class="text-xl font-semibold text-gray-800 mt-2" id="eraCountdown">--h : --m</p>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Validator Info Card -->
                 <div class="bg-white rounded-lg shadow-md p-6">
@@ -91,44 +95,38 @@
                     <h2 class="text-xl font-semibold mb-4 text-gray-700">Active Nominators</h2>
                     <div class="overflow-y-auto max-h-[180px]" id="nominatorsList">
                         <div class="space-y-2">
-                            <!-- Nominators List -->
                         </div>
                     </div>
                 </div>
+
             </div>
+                            <!-- History Section -->
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-xl font-semibold mb-4 text-gray-700">Validator History (Last 3 Eras)</h2>
+                
+                                <div id="historyLoader" class="text-center py-8">
+                                    <div class="loader mx-auto"></div>
+                                    <div id="historyLoader" class="text-center py-8">
+                                        <p class="mb-4 text-gray-600">Loading history...</p>
+                                        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                                    </div>
+                                </div>
+                                <div id="historyContent" class="max-h-[400px] overflow-y-auto">
+                                    <table class="min-w-full">
+                                        <thead class="sticky top-0 bg-white">
+                                            <tr class="bg-gray-50">
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Era</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Era Points</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nominators</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
         </div>        
-
-    <!-- Native Staking -->
-    <div class="bg-white rounded-lg shadow-md p-6" id="nativeStaking">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Native Staking</h2>
-        <div class="space-y-4">
-
-            <!-- Staking -->
-            <div>
-                <div class="flex items-center gap-4 mb-2">
-                    <input type="number" id="stakeAmount" placeholder="Amount to stake" class="border rounded p-2" step="0.1">
-                    <button id="stakeButton" disabled class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-                        Stake
-                    </button>
-                </div>
-                <div id="stakeResult" class="mt-2"></div>
-                <div id="stakeInfo" class="mt-2"></div>
-            </div>
-
-            <!-- Unstaking -->
-            <div>
-                <div class="flex items-center gap-4 mb-2">
-                    <input type="number" id="unstakeAmount" placeholder="Amount to unstake" class="border rounded p-2" step="0.1">
-                    <button id="unstakeButton" disabled class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-                        Unstake
-                    </button>
-                </div>
-                <div id="unstakeResult" class="mt-2"></div>
-            </div>
-
-            <div id="stakingLoader" class="loader"></div>
-        </div>
-    </div>
 
     </div>
 

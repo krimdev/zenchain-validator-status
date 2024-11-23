@@ -9,17 +9,14 @@ const STATUS_ABI = [
 const BATCH_ADDRESS = "0x0000000000000000000000000000000000000808";
 const STATUS_ADDRESS = "0x0000000000000000000000000000000000000800";
 
-// Global state
 let updateInterval;
 let isManuallyDisconnected = false;
 
-// DOM Elements
 const connectButton = document.getElementById('connectWallet');
 const walletInfo = document.getElementById('walletInfo');
 const batchResult = document.getElementById('batchResult');
 const batchLoader = document.getElementById('batchLoader');
 
-// Connect wallet function
 async function connectWallet() {
     isManuallyDisconnected = false;
     localStorage.removeItem('walletManuallyDisconnected');
@@ -31,21 +28,19 @@ async function connectWallet() {
 
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         currentValidatorAddress = accounts[0];
-        
-        // Vérifier si c'est un validateur
         const provider = new ethers.BrowserProvider(window.ethereum);
         const staking = new ethers.Contract(STATUS_ADDRESS, STATUS_ABI, provider);
+        
         const validatorStatus = await staking.status(accounts[0]);
-        const statusNumber = Number(validatorStatus);
-        // Debug logs
+        
+        const statusNumber = Number(validatorStatus.toString()); 
+        console.log(statusNumber)
         console.log("Validator status:", validatorStatus);
         console.log("Is validator?", validatorStatus === 2);
 
-        // Connecter le wallet
         if (statusNumber !== 2) {
-            // Cacher les sections pour non-validateurs
             document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2').style.display = 'none';
-            document.querySelector('.bg-white.rounded-lg.shadow-md.p-6:last-child').style.display = 'none'; // Section staking
+            document.querySelector('.bg-white.rounded-lg.shadow-md.p-6:last-child').style.display = 'none'; 
             document.getElementById('nativeStaking').style.display = 'none';
             walletInfo.innerHTML = `
                 <div class="p-4 bg-yellow-100 text-yellow-700 rounded-md flex justify-between items-center">
@@ -57,7 +52,7 @@ async function connectWallet() {
                     </button>
                 </div>
             `;
-            connectButton.style.display = 'none'; // Cacher le bouton connect
+            connectButton.style.display = 'none';
         } else {
             walletInfo.innerHTML = `
                 <div class="p-4 bg-green-100 text-green-700 rounded-md flex justify-between items-center">
@@ -71,12 +66,10 @@ async function connectWallet() {
             `;
             connectButton.style.display = 'none';
 
-            // Enable staking buttons if available
             if (window.enableStakingButtons) {
                 await window.enableStakingButtons();
             }
 
-            // Set auto-update interval
             updateInterval = setInterval(() => {
                 if (window.updateAllInfo) {
                     window.updateAllInfo();
@@ -84,7 +77,6 @@ async function connectWallet() {
             }, 3600000);
         }
 
-        // Add disconnect event listener
         document.getElementById('disconnectWallet').addEventListener('click', disconnectWallet);
 
     } catch (error) {
@@ -96,7 +88,6 @@ async function connectWallet() {
     }
 }
 
-// Modify disconnectWallet function
 async function disconnectWallet() {
     if (updateInterval) clearInterval(updateInterval);
     
@@ -104,26 +95,25 @@ async function disconnectWallet() {
     localStorage.setItem('walletManuallyDisconnected', 'true');
     
     walletInfo.innerHTML = '';
-    connectButton.style.display = 'block'; // Montrer le bouton connect
+    connectButton.style.display = 'block';
     connectButton.textContent = 'Connect Wallet';
     connectButton.disabled = false;
     connectButton.classList.remove('bg-gray-500');
     connectButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
 
-    // Show all sections in case they were hidden
+
     document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2').style.display = 'grid';
     document.querySelector('.bg-white.rounded-lg.shadow-md.p-6:last-child').style.display = 'block';
 
-    // Disable interaction buttons
     if (stakeButton && unstakeButton) {
         stakeButton.disabled = true;
         unstakeButton.disabled = true;
     }
 }
-// Check connection on page load
+
 window.addEventListener('load', async () => {
     try {
-        // Check if wallet was manually disconnected
+
         if (localStorage.getItem('walletManuallyDisconnected') === 'true') {
             return;
         }
@@ -139,5 +129,4 @@ window.addEventListener('load', async () => {
     }
 });
 
-// Event listeners
 connectButton.addEventListener('click', connectWallet);
